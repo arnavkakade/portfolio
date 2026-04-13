@@ -421,10 +421,10 @@ export default function App() {
                   padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 500, transition: "all 0.2s", fontFamily: "'Outfit', sans-serif",
                 }}>{item}</button>
               ))}
-              <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{
+              {/* <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{
                 background: t.bgCard, border: `1px solid ${t.border}`, borderRadius: 8, padding: 8,
                 cursor: "pointer", color: t.textSecondary, marginLeft: 8, display: "flex", alignItems: "center",
-              }}>{theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}</button>
+              }}>{theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}</button> */}
             </div>
             <div className="mobile-toggle" style={{ display: "none" }}>
               <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} style={{ background: "none", border: "none", color: t.textSecondary, cursor: "pointer", padding: 8 }}>
