@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, ReactNode } from "react";
+import emailjs from "@emailjs/browser";
 import {
   Code, Database, Cloud, Wrench, Linkedin, Mail, Phone, MapPin,
   ChevronDown, Menu, X, Moon, Sun, Award, Briefcase, GraduationCap,
   Send, Download, ArrowUp, Zap, Globe, Shield, Bot, CreditCard,
   FileText, Users, TrendingUp, CheckCircle, Play, Layers, Terminal,
-  Cpu, Server, Github
+  Cpu, Server, Github, AlertCircle
 } from "lucide-react";
 
 /* ═══════════════════════════════════════════
@@ -338,6 +339,8 @@ export default function App() {
   const [projectFilter, setProjectFilter] = useState("All");
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [formSent, setFormSent] = useState(false);
+  const [formSending, setFormSending] = useState(false);
+  const [formError, setFormError] = useState("");
   const [showTop, setShowTop] = useState(false);
 
   const t = themes[theme];
@@ -362,10 +365,42 @@ export default function App() {
     setMobileMenu(false);
   };
 
-  const handleForm = () => {
-    setFormSent(true);
-    setTimeout(() => setFormSent(false), 3000);
-    setFormData({ name: "", email: "", message: "" });
+  const handleForm = async () => {
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setFormError("Please fill in all fields.");
+      return;
+    }
+    if (!serviceId || !templateId || !publicKey) {
+      setFormError("Email service is not configured.");
+      return;
+    }
+
+    setFormError("");
+    setFormSending(true);
+    try {
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          reply_to: formData.email,
+          message: formData.message,
+        },
+        { publicKey }
+      );
+      setFormSent(true);
+      setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setFormSent(false), 4000);
+    } catch (err) {
+      setFormError("Failed to send. Please try again or email me directly.");
+    } finally {
+      setFormSending(false);
+    }
   };
 
   const filteredProjects = projectFilter === "All" ? projects : projects.filter(p => p.category === projectFilter);
@@ -745,10 +780,15 @@ export default function App() {
                         width: "100%", padding: "12px 16px", background: t.bgTertiary, border: `1px solid ${t.border}`, borderRadius: 10, color: t.text, fontSize: 14, fontFamily: "'Outfit', sans-serif", resize: "vertical", transition: "all 0.2s",
                       }} />
                     </div>
-                    <button onClick={handleForm} style={{
-                      background: t.gradient, color: "#fff", border: "none", padding: "14px 28px", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit', sans-serif",
-                      transition: "all 0.3s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: `0 4px 20px ${t.accent}33`,
-                    }}><Send size={16} /> Send Message</button>
+                    {formError && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "#ef444415", border: "1px solid #ef444440", borderRadius: 10, color: "#ef4444", fontSize: 13 }}>
+                        <AlertCircle size={16} /> {formError}
+                      </div>
+                    )}
+                    <button onClick={handleForm} disabled={formSending} style={{
+                      background: t.gradient, color: "#fff", border: "none", padding: "14px 28px", borderRadius: 10, cursor: formSending ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit', sans-serif",
+                      transition: "all 0.3s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: `0 4px 20px ${t.accent}33`, opacity: formSending ? 0.7 : 1,
+                    }}><Send size={16} /> {formSending ? "Sending..." : "Send Message"}</button>
                   </div>
                 )}
               </div>
